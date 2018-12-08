@@ -1,12 +1,14 @@
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,13 +23,20 @@ public class Day7 {
   public static void main(String[] args) throws IOException {
     StopWatch stopwatch = new StopWatch();
     stopwatch.start();
-    System.out.println(new Day7().part1());
+    String sequence = new Day7().part1();
+    System.out.println(sequence);
+    stopwatch.stop();
+    System.out.println("time spent: " + stopwatch.getTime() + "ms");
+
+    stopwatch.reset();
+    stopwatch.start();
+    System.out.println(new Day7().part2(sequence));
     stopwatch.stop();
     System.out.println("time spent: " + stopwatch.getTime() + "ms");
   }
 
   public String part1() throws IOException {
-    String input = IOUtils.toString(getClass().getResourceAsStream("input_day_07.txt"), StandardCharsets.UTF_8);
+    String input = IOUtils.toString(getClass().getResourceAsStream("input_day_07.txt"), StandardCharsets.UTF_8).replaceAll("\r","");
 
     Map<String, Step> steps = new HashMap<>();
 
@@ -55,14 +64,65 @@ public class Day7 {
     return stepsInOrder.stream().map(step -> step.id).collect(Collectors.joining());
   }
 
+  public String part2(String sequence) throws IOException {
+    List<Step> stepList = Arrays.stream(sequence.split("")).map(Step::new).collect(Collectors.toList());
+
+
+    String input = IOUtils.toString(getClass().getResourceAsStream("input_day_07.txt"), StandardCharsets.UTF_8).replaceAll("\r","");
+
+    Map<String, Step> steps = new HashMap<>();
+
+    for (String line : input.split("\n")) {
+      final String[] split = line.split(" ");
+      String mustBeFinished = split[1];
+      String before = split[7];
+      if(!steps.containsKey(before)){
+        steps.put(before, stepList.stream().filter(step -> step.id.equals(before)).findFirst().get());
+      }
+      if(!steps.containsKey(mustBeFinished)){
+        steps.put(mustBeFinished, stepList.stream().filter(step -> step.id.equals(mustBeFinished)).findFirst().get());
+      }
+      steps.get(before).beforeSteps.add(steps.get(mustBeFinished));
+    }
+
+    int seconds = 0;
+    boolean stillWorking = true;
+    while(stillWorking){
+      List<Step> available = new ArrayList<>(stepList);
+      boolean someoneWorked = false;
+      for(int i = 0; i < 5; i++){
+        Optional<Step> first = available.stream().filter(step -> !step.completed && step.preconditionsAreMet()).findFirst();
+        if(first.isPresent()){
+          someoneWorked = true;
+          Step step = first.get();
+          step.workLeft--;
+          available.remove(step);
+        }
+      }
+
+      stepList.forEach(step -> {
+        if(step.workLeft == 0) step.complete();
+      });
+
+      stillWorking = someoneWorked;
+      if(someoneWorked){
+        seconds++;
+      }
+    }
+
+    return String.valueOf(seconds);
+  }
+
   private static class Step {
 
     String id;
     private boolean completed = false;
     private Set<Step> beforeSteps = new HashSet<>();
+    int workLeft;
 
     public Step(String id) {
       this.id = id;
+      this.workLeft = 60 + Character.getNumericValue(id.toCharArray()[0]) - 9;
     }
 
     public void complete(){

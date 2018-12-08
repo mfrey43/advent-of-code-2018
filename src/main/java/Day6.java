@@ -16,11 +16,11 @@ import org.apache.commons.lang.time.StopWatch;
 public class Day6 {
 
   public static void main(String[] args) throws IOException {
-//    System.out.println(new Day6().part1());
+    System.out.println(new Day6().part1());
 
     StopWatch stopwatch = new StopWatch();
     stopwatch.start();
-    System.out.println(new Day6().part2());
+    //System.out.println(new Day6().part2());
     stopwatch.stop();
     System.out.println(stopwatch.getTime());
 
@@ -36,7 +36,7 @@ public class Day6 {
   }
 
   public String part1() throws IOException {
-    String input = IOUtils.toString(getClass().getResourceAsStream("input_day_06.txt"), StandardCharsets.UTF_8);
+    String input = IOUtils.toString(getClass().getResourceAsStream("input_day_06.txt"), StandardCharsets.UTF_8).replaceAll("\r","");
 
     List<Point> points = new ArrayList<>();
     int pointNumber = 0;
@@ -52,7 +52,7 @@ public class Day6 {
   }
 
   public String part2() throws IOException {
-    String input = IOUtils.toString(getClass().getResourceAsStream("input_day_06.txt"), StandardCharsets.UTF_8);
+    String input = IOUtils.toString(getClass().getResourceAsStream("input_day_06.txt"), StandardCharsets.UTF_8).replaceAll("\r","");
 
     List<Point> points = new ArrayList<>();
     int pointNumber = 0;
@@ -203,18 +203,18 @@ public class Day6 {
         if (point == this) {
           continue;
         }
-        if (point.getX() <= x) {
-          if (point.getY() >= y) {
+        if (point.getX() < x) {
+          if (point.getY() > y) {
             bottomLeft = true;
           }
-          if (point.getY() <= y) {
+          if (point.getY() < y) {
             topLeft = true;
           }
-        } else if (point.getX() >= x) {
-          if (point.getY() >= y) {
+        } else if (point.getX() > x) {
+          if (point.getY() > y) {
             bottomRight = true;
           }
-          if (point.getY() <= y) {
+          if (point.getY() < y) {
             topRight = true;
           }
         }
